@@ -8,11 +8,11 @@ class MySQL(SQL):
     """
     def __init__(self, host, port,
                  database, user, password,
-                 commit_interval, logger, table_prefix=""):
+                 commit_interval, logger, target_table=None):
         super().__init__(database,
                          commit_interval,
                          logger,
-                         table_prefix)
+                         target_table)
         self._host = host
         self._port = port
         self._user = user
@@ -80,7 +80,10 @@ class MySQL(SQL):
                                               passwd=self._password,
                                               db=self._database,
                                               charset='utf8')
-        except pymysql.OperationalError as e:
+        except Exception as e:
+            self._logger.debug(
+                'Trying to open database: {0}, details: {1}'.
+                format(self._database, str(e)))
             # attempt to create the database
             self.connection = pymysql.connect(host=self._host,
                                               port=self._port,

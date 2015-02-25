@@ -3,17 +3,20 @@ from nio.modules.threading import RLock
 
 class SQL(object):
 
+    #TODO: this LUT substitution helper could come from configuration/setting
+    TABLE_NAME_TRANSLATIONS = {'Signal': 'NIOSignal'}
+
     class FieldItem(object):
         def __init__(self, name, type_in):
             self.name = name
             self.type = type_in
 
-    def __init__(self, database, commit_interval, logger, table_prefix):
+    def __init__(self, database, commit_interval, logger, target_table):
         super().__init__()
         self._database = database
         self._commit_interval = commit_interval
         self._logger = logger
-        self._table_prefix = table_prefix
+        self._target_table = target_table
 
         self._connection = None
         self._connection_lock = RLock()
@@ -25,7 +28,8 @@ class SQL(object):
     def open(self):
         """ Initiates a database connection
         """
-        self.setup_connection()
+        with self._connection_lock:
+            self.setup_connection()
         table_names = self.execute_fetch_all_statement(self.get_table_names())
         for table_name, in table_names:
             self._update_field_definitions(table_name)
@@ -36,7 +40,7 @@ class SQL(object):
 
         # commit any unsaved changes if any
         self.commit()
-        if self.is_connected():
+        if self.connected:
             with self._connection_lock:
                 try:
                     self.connection.close()
@@ -53,14 +57,14 @@ class SQL(object):
     def add_items(self, items):
         """ Add items to database, each item can potentially
         go to a different table depending of its class type
-        
+
         Args:
             items: list of items to add to database, the table an
                 item goes to is determined based on the item class
         """
 
         processed_items = 0
-        if self.is_connected():
+        if self.connected:
             # each item can potentially add columns to a table,
             # make sure potential new table structure can store item
             self._adjust_tables_structure(items, False)
@@ -191,16 +195,29 @@ class SQL(object):
 
         return result
 
-    def is_connected(self):
-        return self.connection is not None
+    @property
+    def connected(self):
+        with self._connection_lock:
+            return self.connection is not None
 
     def get_table_name(self, item):
         """ Finds out table name for a given item
         """
-        return "{0}{1}".format(self._table_prefix, item.__class__.__name__)
+        try:
+            if callable(self._target_table):
+                table_name = self._target_table(item)
+        except Exception as e:
+            self._logger.warning(
+                'Target table method failure: {0}, details: {1}'.
+                format(self._target_table, str(e)))
+            table_name = item.__class__.__name__
+
+        if table_name in SQL.TABLE_NAME_TRANSLATIONS:
+            table_name = SQL.TABLE_NAME_TRANSLATIONS[table_name]
+        return table_name
 
     def commit(self):
-        if self.is_connected():
+        if self.connected:
             with self._connection_lock:
                 try:
                     self.connection.commit()
@@ -258,7 +275,12 @@ class SQL(object):
             format(table, fields_definition)
         self._logger.debug('Creating table: {0}, statement: {1}'.
                            format(table, statement))
-        self.execute_statement(statement)
+        try:
+            self.execute_statement(statement)
+        except Exception as e:
+            self._logger.error("Error creating table, please make sure "
+                               "table name: {0} is allowed".format(table))
+            raise e
 
     def _alter_table(self, table, fields, item):
         self._logger.info('Altering table: {0}, fields: {1} need to be added'.

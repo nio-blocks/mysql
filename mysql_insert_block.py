@@ -20,9 +20,9 @@ class Credentials(PropertyHolder):
         password (str): User's password
     """
     username = StringProperty(title='User to connect as',
-                              default='root')
+                              default='[[MYSQL_USER]]')
     password = StringProperty(title='Password to connect with',
-                              default='mysqlroot')
+                              default='[[MYSQL_PASSWORD]]')
 
 
 @DependsOn("nio.modules.scheduler")

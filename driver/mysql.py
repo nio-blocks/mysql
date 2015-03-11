@@ -81,7 +81,7 @@ class MySQL(SQL):
                                               db=self._database,
                                               charset='utf8')
         except Exception as e:
-            self._logger.debug(
+            self._logger.warning(
                 'Trying to open database: {0}, details: {1}'.
                 format(self._database, str(e)))
             # attempt to create the database

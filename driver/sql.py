@@ -3,10 +3,11 @@ from nio.modules.threading import RLock
 
 class SQL(object):
 
-    #TODO: this LUT substitution helper could come from configuration/setting
+    # TODO: this LUT substitution helper could come from configuration/setting
     TABLE_NAME_TRANSLATIONS = {'Signal': 'NIOSignal'}
 
     class FieldItem(object):
+
         def __init__(self, name, type_in):
             self.name = name
             self.type = type_in
@@ -45,10 +46,9 @@ class SQL(object):
             with self._connection_lock:
                 try:
                     self.connection.close()
-                except Exception as e:
-                    self._logger.warning(
-                        'Trying to close database: {0}, details: {1}'.
-                        format(self._database, str(e)))
+                except:
+                    self._logger.exception('Could not close database: {0}'.
+                                           format(self._database))
                 finally:
                     self.connection = None
 
@@ -110,12 +110,11 @@ class SQL(object):
                                 'Inserted: {0} into: {1}, statement: {2}, '
                                 'values:{3}'.format(items_count, table,
                                                     statement, values))
-                        except Exception as e:
-                            self._logger.warning(
-                                'Executing: {0} with value: {1}, details: {2}'.
-                                format(statement, tuple(value_tables[table]),
-                                       str(e)))
-                            raise e
+                        except:
+                            self._logger.exception(
+                                'Executing: {0} with value: {1}'.
+                                format(statement, tuple(value_tables[table])))
+                            raise
                         finally:
                             cursor.close()
 
@@ -190,10 +189,9 @@ class SQL(object):
         try:
             if callable(self._target_table):
                 table_name = self._target_table(item)
-        except Exception as e:
-            self._logger.warning(
-                'Target table method failure: {0}, details: {1}'.
-                format(self._target_table, str(e)))
+        except:
+            self._logger.exception(
+                'Target table method failure: {0}'.format(self._target_table))
             table_name = item.__class__.__name__
 
         if table_name in SQL.TABLE_NAME_TRANSLATIONS:
@@ -205,10 +203,8 @@ class SQL(object):
             with self._connection_lock:
                 try:
                     self.connection.commit()
-                except Exception as e:
-                    self._logger.warning(
-                        'Trying to commit changes: {0}, details: {1}'.
-                        format(self._database, str(e)))
+                except:
+                    self._logger.exception('Could not commit changes')
 
     @property
     def connection(self):
@@ -261,10 +257,9 @@ class SQL(object):
                            format(table, statement))
         try:
             self.execute_statement(statement)
-        except Exception as e:
-            self._logger.error("Error creating table, please make sure "
-                               "table name: {0} is allowed".format(table))
-            raise e
+        except:
+            self._logger.exception("Error creating table {0}".format(table))
+            raise
 
     def _alter_table(self, table, fields, item):
         self._logger.info('Altering table: {0}, fields: {1} need to be added'.
@@ -316,7 +311,7 @@ class SQL(object):
         """
         try:
             with self._tables_lock:
-                if not table in self._tables:
+                if table not in self._tables:
                     self._tables[table] = {}
 
                 self._tables[table]["field_item_list"], \

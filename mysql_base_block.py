@@ -18,10 +18,8 @@ class Credentials(PropertyHolder):
         username (str): User to connect as
         password (str): User's password
     """
-    username = StringProperty(title='User to connect as',
-                              default='[[MYSQL_USER]]')
-    password = StringProperty(title='Password to connect with',
-                              default='[[MYSQL_PASSWORD]]')
+    username = StringProperty(title='Username', default='[[MYSQL_USER]]')
+    password = StringProperty(title='Password', default='[[MYSQL_PASSWORD]]')
 
 
 @DependsOn("nio.modules.scheduler")
@@ -36,12 +34,10 @@ class MySQLBase(Block):
         retry_timeout: When disconnected, this specifies how long to wait
                        before attempting to connect.
     """
-    host = StringProperty(title='MySQL Host',
-                          default='[[MYSQL_HOST]]')
-    port = IntProperty(title='Port',
-                       default=3306)
+    host = StringProperty(title='MySQL Host', default='[[MYSQL_HOST]]')
+    port = IntProperty(title='Port', default=3306)
     database = StringProperty(title='Database Name', default="signals")
-    credentials = ObjectProperty(Credentials, title='Credentials')
+    credentials = ObjectProperty(Credentials, title='Connection Credentials')
     commit_interval = IntProperty(title='Commit Interval', default=50)
     retry_timeout = TimeDeltaProperty(title="Retry Timeout",
                                       default={"seconds": 1})
@@ -96,8 +92,9 @@ class MySQLBase(Block):
                     # attempt to add these signals again, specify not to retry
                     self.deliver_signals(signals, False)
                 else:
-                    self._logger.error('Exception, details {0}'.
-                                       format(exception_details))
+                    self._logger.exception('Unable to reconnect and send')
+            else:
+                self._logger.exception('Unable to execute query')
 
     def execute_query(self, signals):
         """ To be implemented by inheriting classes

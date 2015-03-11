@@ -118,8 +118,7 @@ class MySQLBase(Block):
             self._logger.debug("Connected to: {0}:{1}".format(
                 self.host, self.port))
         except Exception as e:
-            self._logger.debug("Failed to connect, details: {0}".
-                               format(str(e)))
+            self._logger.exception("Failed to connect to database, retrying")
             self._connection_job = Job(
                 self._reconnect,
                 timedelta(seconds=self.retry_timeout.total_seconds()),

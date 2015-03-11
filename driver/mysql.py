@@ -17,7 +17,6 @@ class MySQL(SQL):
         self._port = port
         self._user = user
         self._password = password
-        self._tables = {}
 
     def get_field_format(self):
         return "%s"

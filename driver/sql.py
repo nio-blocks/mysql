@@ -1,3 +1,4 @@
+from collections import defaultdict
 from nio.modules.threading import RLock
 
 
@@ -22,7 +23,7 @@ class SQL(object):
         self._connection = None
         self._connection_lock = RLock()
         # caches field definitions for each table in the database
-        self._tables = {}
+        self._tables = defaultdict(dict)
         self._tables_lock = RLock()
         self._uncommitted = 0
 
@@ -71,12 +72,9 @@ class SQL(object):
             self._adjust_tables_structure(items, False)
 
             # determine for each table, the values that will be inserted to it
-            value_tables = {}
+            value_tables = defaultdict(list)
             for e in items:
                 table_name = self.get_table_name(e)
-                if table_name not in value_tables:
-                    value_tables[table_name] = []
-
                 with self._tables_lock:
                     if table_name in self._tables:
                         processed_items += 1
@@ -163,10 +161,13 @@ class SQL(object):
         with self._connection_lock:
             cursor = self.connection.cursor()
             try:
+                self._logger.debug("Executing query: {}".format(statement))
                 result = cursor.execute(statement)
                 description = cursor.description
                 if cursor_call:
                     result = getattr(cursor, cursor_call)()
+            except:
+                self._logger.exception("Could not execute query")
             finally:
                 cursor.close()
 
@@ -311,9 +312,6 @@ class SQL(object):
         """
         try:
             with self._tables_lock:
-                if table not in self._tables:
-                    self._tables[table] = {}
-
                 self._tables[table]["field_item_list"], \
                     self._tables[table]["field_names"], \
                     self._tables[table]["field_formats"] = \
@@ -333,10 +331,9 @@ class SQL(object):
             self._logger.debug('field_list is: {0}'.
                                format(self._tables[table]["field_list"]))
 
-        except Exception as e:
-            self._logger.error('Updating field definitions: {0}, details: {1}'.
-                               format(self._database, str(e)))
-            raise e
+        except:
+            self._logger.exception("Error Updating field definitions")
+            raise
 
     def _check_table(self, table, fields):
         """ Makes sure a table exists and updates internal table
@@ -356,11 +353,9 @@ class SQL(object):
                 self._create_table(table, fields)
                 self._update_field_definitions(table)
 
-        except Exception as e:
-            self._logger.error(
-                'Failed to find out whether table exists: {0}, '
-                'details: {1}'.format(self._database, str(e)))
-            raise e
+        except:
+            self._logger.exception("Failed to find out whether table exists")
+            raise
 
     def _adjust_tables_structure(self, items, in_error_mode=False):
         """ Makes sure table columns structure is up to date and can handle

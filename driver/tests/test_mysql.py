@@ -1,8 +1,9 @@
 from nio.common.signal.base import Signal
-from tests.logging_handler.blocks.src.mysql.driver.mysql import MySQL
 
 # TODO, set this to False by default
-skip_tests = True
+from ..mysql import MySQL
+
+skip_tests = False
 reason = ""
 
 # ignore tests when pymysql is not installed
@@ -89,7 +90,7 @@ class TestMySQL(unittest.TestCase):
         # create instance and connect
         self.my_sql = MySQL("127.0.0.1", 3306, "nio_unittests",
                             'root', 'mysqlroot',
-                            10, logger)
+                            10, logger, self.get_table_name)
         self.assertIsNone(self.my_sql.connection)
 
         self.my_sql.open()
@@ -106,6 +107,10 @@ class TestMySQL(unittest.TestCase):
             cursor.execute("DROP DATABASE nio_unittests")
             cursor.close()
 
+    def get_table_name(self, item):
+        # do default anyways
+        return item.__class__.__name__
+
     @unittest.skipIf(skip_tests, reason)
     def test_add_item(self):
 
@@ -118,7 +123,7 @@ class TestMySQL(unittest.TestCase):
         rows = self.my_sql.dump()
         self.assertEqual(len(rows[table_name]), 1)
 
-    #@unittest.skipIf(skip_tests, reason)
+    @unittest.skipIf(skip_tests, reason)
     def test_add_item_with_to_dict(self):
 
         item = AttributeTypesWithToDict(

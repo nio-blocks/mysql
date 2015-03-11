@@ -9,7 +9,7 @@ Properties
 -   **host**: MySQL server host.
 -   **port**: MySQL server port.
 -   **database**: Database name.
--   **commit_interval**: Specifies how many records before a commit call.
+-   **commit_after_query**: Whether or not to issue a commit after a query is executed.
 -   **retry_timeout**: When disconnected, this specifies how long to wait before attempting to connect.
 
 Dependencies
@@ -69,7 +69,6 @@ Properties
 --------------
 
 -   **query**: Query statement
--   **commit**: Specifies if a commit statement should follow query execution
 
 Dependencies
 ----------------

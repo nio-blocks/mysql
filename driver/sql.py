@@ -1,36 +1,38 @@
+from collections import defaultdict
 from nio.modules.threading import RLock
 
 
 class SQL(object):
 
-    #TODO: this LUT substitution helper could come from configuration/setting
+    # TODO: this LUT substitution helper could come from configuration/setting
     TABLE_NAME_TRANSLATIONS = {'Signal': 'NIOSignal'}
 
     class FieldItem(object):
+
         def __init__(self, name, type_in):
             self.name = name
             self.type = type_in
 
-    def __init__(self, database, commit_interval, logger, target_table):
+    def __init__(self, database, commit_after_query, logger, target_table):
         super().__init__()
         self._database = database
-        self._commit_interval = commit_interval
+        self._commit_after_query = commit_after_query
         self._logger = logger
         self._target_table = target_table
 
         self._connection = None
         self._connection_lock = RLock()
         # caches field definitions for each table in the database
-        self._tables = {}
+        self._tables = defaultdict(dict)
         self._tables_lock = RLock()
-        self._uncommitted = 0
 
     def open(self):
         """ Initiates a database connection
         """
         with self._connection_lock:
             self.setup_connection()
-        table_names = self.execute_fetch_all_statement(self.get_table_names())
+        table_names, _ = \
+            self.execute_fetch_all_statement(self.get_table_names())
         for table_name, in table_names:
             self._update_field_definitions(table_name)
 
@@ -44,10 +46,9 @@ class SQL(object):
             with self._connection_lock:
                 try:
                     self.connection.close()
-                except Exception as e:
-                    self._logger.warning(
-                        'Trying to close database: {0}, details: {1}'.
-                        format(self._database, str(e)))
+                except:
+                    self._logger.exception('Could not close database: {0}'.
+                                           format(self._database))
                 finally:
                     self.connection = None
 
@@ -70,12 +71,9 @@ class SQL(object):
             self._adjust_tables_structure(items, False)
 
             # determine for each table, the values that will be inserted to it
-            value_tables = {}
+            value_tables = defaultdict(list)
             for e in items:
                 table_name = self.get_table_name(e)
-                if table_name not in value_tables:
-                    value_tables[table_name] = []
-
                 with self._tables_lock:
                     if table_name in self._tables:
                         processed_items += 1
@@ -102,25 +100,20 @@ class SQL(object):
                         values = tuple(value_tables[table])
                         try:
                             cursor.executemany(statement, values)
-                            # keep track of rows added
-                            self._uncommitted += items_count
 
                             self._logger.debug(
                                 'Inserted: {0} into: {1}, statement: {2}, '
                                 'values:{3}'.format(items_count, table,
                                                     statement, values))
-                        except Exception as e:
-                            self._logger.warning(
-                                'Executing: {0} with value: {1}, details: {2}'.
-                                format(statement, tuple(value_tables[table]),
-                                       str(e)))
-                            raise e
+                        except:
+                            self._logger.exception(
+                                'Executing: {0} with value: {1}'.
+                                format(statement, tuple(value_tables[table])))
+                            raise
                         finally:
                             cursor.close()
 
-            if self._uncommitted >= self._commit_interval:
-                # reset counter and commit
-                self._uncommitted = 0
+            if self._commit_after_query:
                 self.commit()
 
         return processed_items
@@ -137,7 +130,7 @@ class SQL(object):
                     "SELECT * FROM {0} {1}".format(
                         table, "" if rows_per_table == -1 else "LIMIT {0}".
                         format(rows_per_table))
-                tables[table] = self.execute_fetch_all_statement(statement)
+                tables[table], _ = self.execute_fetch_all_statement(statement)
 
         return tables
 
@@ -159,41 +152,29 @@ class SQL(object):
             statement: statement to execute
         """
 
-        # create table
         with self._connection_lock:
             cursor = self.connection.cursor()
             try:
+                self._logger.debug("Executing query: {}".format(statement))
                 result = cursor.execute(statement)
+                description = cursor.description
                 if cursor_call:
                     result = getattr(cursor, cursor_call)()
+            except:
+                self._logger.exception("Could not execute query")
             finally:
                 cursor.close()
 
-        return result
+        if self._commit_after_query:
+            self.commit()
+
+        return result, description
 
     def execute_fetch_all_statement(self, statement):
         return self.execute_statement(statement, "fetchall")
 
     def execute_fetch_one_statement(self, statement):
         return self.execute_statement(statement, "fetchone")
-
-    def execute_fetch_one_statement1(self, statement):
-        """ Executes a statement
-
-        Args:
-            statement: statement to execute
-        """
-
-        # create table
-        with self._connection_lock:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(statement)
-                result = cursor.fetchone()
-            finally:
-                cursor.close()
-
-        return result
 
     @property
     def connected(self):
@@ -206,10 +187,9 @@ class SQL(object):
         try:
             if callable(self._target_table):
                 table_name = self._target_table(item)
-        except Exception as e:
-            self._logger.warning(
-                'Target table method failure: {0}, details: {1}'.
-                format(self._target_table, str(e)))
+        except:
+            self._logger.exception(
+                'Target table method failure: {0}'.format(self._target_table))
             table_name = item.__class__.__name__
 
         if table_name in SQL.TABLE_NAME_TRANSLATIONS:
@@ -221,10 +201,8 @@ class SQL(object):
             with self._connection_lock:
                 try:
                     self.connection.commit()
-                except Exception as e:
-                    self._logger.warning(
-                        'Trying to commit changes: {0}, details: {1}'.
-                        format(self._database, str(e)))
+                except:
+                    self._logger.exception('Could not commit changes')
 
     @property
     def connection(self):
@@ -238,7 +216,7 @@ class SQL(object):
         """ Finds out field names for a given table
         """
 
-        fields_def = self.execute_fetch_all_statement(
+        fields_def, _ = self.execute_fetch_all_statement(
             self.get_fields_statement(table))
         field_names = self.parse_field_names(fields_def)
         return field_names
@@ -277,10 +255,9 @@ class SQL(object):
                            format(table, statement))
         try:
             self.execute_statement(statement)
-        except Exception as e:
-            self._logger.error("Error creating table, please make sure "
-                               "table name: {0} is allowed".format(table))
-            raise e
+        except:
+            self._logger.exception("Error creating table {0}".format(table))
+            raise
 
     def _alter_table(self, table, fields, item):
         self._logger.info('Altering table: {0}, fields: {1} need to be added'.
@@ -332,9 +309,6 @@ class SQL(object):
         """
         try:
             with self._tables_lock:
-                if not table in self._tables:
-                    self._tables[table] = {}
-
                 self._tables[table]["field_item_list"], \
                     self._tables[table]["field_names"], \
                     self._tables[table]["field_formats"] = \
@@ -354,10 +328,9 @@ class SQL(object):
             self._logger.debug('field_list is: {0}'.
                                format(self._tables[table]["field_list"]))
 
-        except Exception as e:
-            self._logger.error('Updating field definitions: {0}, details: {1}'.
-                               format(self._database, str(e)))
-            raise e
+        except:
+            self._logger.exception("Error Updating field definitions")
+            raise
 
     def _check_table(self, table, fields):
         """ Makes sure a table exists and updates internal table
@@ -377,11 +350,9 @@ class SQL(object):
                 self._create_table(table, fields)
                 self._update_field_definitions(table)
 
-        except Exception as e:
-            self._logger.error(
-                'Failed to find out whether table exists: {0}, '
-                'details: {1}'.format(self._database, str(e)))
-            raise e
+        except:
+            self._logger.exception("Failed to find out whether table exists")
+            raise
 
     def _adjust_tables_structure(self, items, in_error_mode=False):
         """ Makes sure table columns structure is up to date and can handle

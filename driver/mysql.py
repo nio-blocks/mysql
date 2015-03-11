@@ -8,16 +8,15 @@ class MySQL(SQL):
     """
     def __init__(self, host, port,
                  database, user, password,
-                 commit_interval, logger, target_table=None):
+                 commit_after_query, logger, target_table=None):
         super().__init__(database,
-                         commit_interval,
+                         commit_after_query,
                          logger,
                          target_table)
         self._host = host
         self._port = port
         self._user = user
         self._password = password
-        self._tables = {}
 
     def get_field_format(self):
         return "%s"
@@ -81,7 +80,7 @@ class MySQL(SQL):
                                               db=self._database,
                                               charset='utf8')
         except Exception as e:
-            self._logger.debug(
+            self._logger.warning(
                 'Trying to open database: {0}, details: {1}'.
                 format(self._database, str(e)))
             # attempt to create the database

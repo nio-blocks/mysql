@@ -30,7 +30,8 @@ class SQL(object):
         """
         with self._connection_lock:
             self.setup_connection()
-        table_names = self.execute_fetch_all_statement(self.get_table_names())
+        table_names, _ = \
+            self.execute_fetch_all_statement(self.get_table_names())
         for table_name, in table_names:
             self._update_field_definitions(table_name)
 
@@ -137,7 +138,7 @@ class SQL(object):
                     "SELECT * FROM {0} {1}".format(
                         table, "" if rows_per_table == -1 else "LIMIT {0}".
                         format(rows_per_table))
-                tables[table] = self.execute_fetch_all_statement(statement)
+                tables[table], _ = self.execute_fetch_all_statement(statement)
 
         return tables
 
@@ -164,36 +165,19 @@ class SQL(object):
             cursor = self.connection.cursor()
             try:
                 result = cursor.execute(statement)
+                description = cursor.description
                 if cursor_call:
                     result = getattr(cursor, cursor_call)()
             finally:
                 cursor.close()
 
-        return result
+        return result, description
 
     def execute_fetch_all_statement(self, statement):
         return self.execute_statement(statement, "fetchall")
 
     def execute_fetch_one_statement(self, statement):
         return self.execute_statement(statement, "fetchone")
-
-    def execute_fetch_one_statement1(self, statement):
-        """ Executes a statement
-
-        Args:
-            statement: statement to execute
-        """
-
-        # create table
-        with self._connection_lock:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(statement)
-                result = cursor.fetchone()
-            finally:
-                cursor.close()
-
-        return result
 
     @property
     def connected(self):
@@ -238,7 +222,7 @@ class SQL(object):
         """ Finds out field names for a given table
         """
 
-        fields_def = self.execute_fetch_all_statement(
+        fields_def, _ = self.execute_fetch_all_statement(
             self.get_fields_statement(table))
         field_names = self.parse_field_names(fields_def)
         return field_names

@@ -1,6 +1,7 @@
 from nio.common.signal.base import Signal
 # TODO, set this to False by default
 from ..mysql import MySQL
+
 skip_tests = False
 reason = ""
 

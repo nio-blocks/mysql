@@ -8,9 +8,9 @@ class MySQL(SQL):
     """
     def __init__(self, host, port,
                  database, user, password,
-                 commit_interval, logger, target_table=None):
+                 commit_after_query, logger, target_table=None):
         super().__init__(database,
-                         commit_interval,
+                         commit_after_query,
                          logger,
                          target_table)
         self._host = host

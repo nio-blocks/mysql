@@ -13,10 +13,10 @@ class SQL(object):
             self.name = name
             self.type = type_in
 
-    def __init__(self, database, commit_interval, logger, target_table):
+    def __init__(self, database, commit_after_query, logger, target_table):
         super().__init__()
         self._database = database
-        self._commit_interval = commit_interval
+        self._commit_after_query = commit_after_query
         self._logger = logger
         self._target_table = target_table
 
@@ -25,7 +25,6 @@ class SQL(object):
         # caches field definitions for each table in the database
         self._tables = defaultdict(dict)
         self._tables_lock = RLock()
-        self._uncommitted = 0
 
     def open(self):
         """ Initiates a database connection
@@ -101,8 +100,6 @@ class SQL(object):
                         values = tuple(value_tables[table])
                         try:
                             cursor.executemany(statement, values)
-                            # keep track of rows added
-                            self._uncommitted += items_count
 
                             self._logger.debug(
                                 'Inserted: {0} into: {1}, statement: {2}, '
@@ -116,9 +113,7 @@ class SQL(object):
                         finally:
                             cursor.close()
 
-            if self._uncommitted >= self._commit_interval:
-                # reset counter and commit
-                self._uncommitted = 0
+            if self._commit_after_query:
                 self.commit()
 
         return processed_items
@@ -157,7 +152,6 @@ class SQL(object):
             statement: statement to execute
         """
 
-        # create table
         with self._connection_lock:
             cursor = self.connection.cursor()
             try:
@@ -170,6 +164,9 @@ class SQL(object):
                 self._logger.exception("Could not execute query")
             finally:
                 cursor.close()
+
+        if self._commit_after_query:
+            self.commit()
 
         return result, description
 

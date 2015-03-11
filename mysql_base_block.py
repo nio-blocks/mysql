@@ -2,11 +2,8 @@ from datetime import timedelta
 
 from nio.common.versioning.dependency import DependsOn
 from nio.common.block.base import Block
-from nio.metadata.properties import TimeDeltaProperty
-from nio.metadata.properties.string import StringProperty
-from nio.metadata.properties.object import ObjectProperty
-from nio.metadata.properties.int import IntProperty
-from nio.metadata.properties.holder import PropertyHolder
+from nio.metadata.properties import TimeDeltaProperty, StringProperty, \
+    ObjectProperty, IntProperty, PropertyHolder, BoolProperty
 from nio.modules.scheduler import Job
 from .driver.mysql import MySQL
 
@@ -30,7 +27,7 @@ class MySQLBase(Block):
         host (str): location of the database
         port (int): open port served by database
         database (str): database name
-        commit_interval: Specifies how many records before a commit call.
+        commit_after_query: Specifies how many records before a commit call.
         retry_timeout: When disconnected, this specifies how long to wait
                        before attempting to connect.
     """
@@ -38,7 +35,8 @@ class MySQLBase(Block):
     port = IntProperty(title='Port', default=3306)
     database = StringProperty(title='Database Name', default="signals")
     credentials = ObjectProperty(Credentials, title='Connection Credentials')
-    commit_interval = IntProperty(title='Commit Interval', default=50)
+    commit_after_query = BoolProperty(
+        title='Commit After Query', default=False)
     retry_timeout = TimeDeltaProperty(title="Retry Timeout",
                                       default={"seconds": 1})
 
@@ -51,7 +49,7 @@ class MySQLBase(Block):
         super().configure(context)
         self._db = MySQL(self.host, self.port, self.database,
                          self.credentials.username, self.credentials.password,
-                         self.commit_interval,
+                         self.commit_after_query,
                          self._logger,
                          target_table=self.get_target_table())
         self._connect()

@@ -67,6 +67,11 @@ class MySQL(SQL):
             value = float(value)
         elif type_in == list:
             value = "'{0}'".format(tuple(value))
+        elif type_in == datetime.datetime:
+            # let datetime values pass through
+            pass
+        else:
+            value = str(value)
 
         return value
 

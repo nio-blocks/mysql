@@ -16,15 +16,10 @@ class MySQLQuery(MySQLBase):
     query = ExpressionProperty(
         title='Query', default="SELECT * from {{$table}}")
 
-    def __init__(self):
-        super().__init__()
-        self._db = None
-        self._connection_job = None
-
     def execute_query(self, signals):
         for signal in signals:
             # evaluate resulting statement
-            query = evaluate_expression(self.query, signal, False)
+            query = self.query(signal)
             rows, description = self._db.execute_statement(query, "fetchall")
             if rows:
                 # grab field names from description

@@ -16,11 +16,6 @@ class MySQLInsert(MySQLBase):
     target_table = ExpressionProperty(
         title='Target table', default="{{($__class__.__name__)}}")
 
-    def __init__(self):
-        super().__init__()
-        self._db = None
-        self._connection_job = None
-
     def get_target_table(self):
         return self.target_table
 

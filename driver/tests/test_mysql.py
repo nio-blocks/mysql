@@ -233,7 +233,7 @@ class TestMySQL(unittest.TestCase):
 
         # make sure items with extra field were populated as expected
         expected_count = items_per_thread2 * thread_count
-        count, = self.my_sql.execute_fetch_one_statement(
+        (count,), description = self.my_sql.execute_fetch_one_statement(
             "select count(*) from IdItem where added_field is not NULL;")
         self.assertEqual(expected_count, count)
 

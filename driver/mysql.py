@@ -68,7 +68,7 @@ class MySQL(SQL):
         elif type_in == list:
             value = "'{0}'".format(tuple(value))
 
-        return value
+        return str(value)
 
     def setup_connection(self):
         import pymysql

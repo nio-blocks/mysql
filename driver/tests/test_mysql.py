@@ -237,6 +237,21 @@ class TestMySQL(unittest.TestCase):
             "select count(*) from IdItem where added_field is not NULL;")
         self.assertEqual(expected_count, count)
 
+    def test_get_value(self):
+        mysql = MySQL(None, None, None, None, None, None, None)
+        value = mysql.get_value(1, int)
+        self.assertTrue(isinstance(value, int))
+        value = mysql.get_value(False, bool)
+        self.assertTrue(isinstance(value, bool))
+        value = mysql.get_value(1.1, float)
+        self.assertTrue(isinstance(value, float))
+        value = mysql.get_value([1,1], list)
+        self.assertTrue(isinstance(value, str))
+        value = mysql.get_value(datetime.now(), datetime)
+        self.assertTrue(isinstance(value, datetime))
+        value = mysql.get_value("a string", str)
+        self.assertTrue(isinstance(value, str))
+
 
 def test_suite():
     return unittest.TestSuite((unittest.makeSuite(TestMySQL)))

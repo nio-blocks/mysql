@@ -21,6 +21,7 @@ from nio.modules.threading import spawn
 
 
 class AttributeTypes(object):
+
     def __init__(self, int_field, string_field,
                  bool_field, float_field, datetime_field):
         super().__init__()
@@ -32,6 +33,7 @@ class AttributeTypes(object):
 
 
 class AttributeTypesWithToDict(Signal):
+
     def __init__(self, int_field, string_field,
                  bool_field, float_field, datetime_field):
         super().__init__()
@@ -43,6 +45,7 @@ class AttributeTypesWithToDict(Signal):
 
 
 class Type1(object):
+
     def __init__(self, field1, field2):
         super().__init__()
         self.field1 = field1
@@ -50,6 +53,7 @@ class Type1(object):
 
 
 class Type2(object):
+
     def __init__(self, field21, field22):
         super().__init__()
         self.field21 = field21
@@ -57,11 +61,13 @@ class Type2(object):
 
 
 class IdItem(object):
+
     def __init__(self, _id):
         super().__init__()
         self.id = _id
 
 
+@unittest.skipIf(skip_tests, reason)
 class TestMySQL(unittest.TestCase):
 
     def setUp(self):
@@ -69,12 +75,12 @@ class TestMySQL(unittest.TestCase):
         logger.setLevel(logging.DEBUG)
 
         # ch = logging.StreamHandler()
-        # # create formatter
+        # create formatter
         # formatter = logging.Formatter(
         #     '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        # # add formatter to ch
+        # add formatter to ch
         # ch.setFormatter(formatter)
-        # # add ch to logger
+        # add ch to logger
         # logger.addHandler(ch)
 
         # every test starts with a clean slate
@@ -84,7 +90,7 @@ class TestMySQL(unittest.TestCase):
                                               user='root',
                                               passwd='mysqlroot')
         except Exception as e:
-            if not "connect to MySQL" in str(e):
+            if "connect to MySQL" not in str(e):
                 raise e
             else:
                 logger.warning("MySQL connection error, Test skipped")
@@ -119,7 +125,6 @@ class TestMySQL(unittest.TestCase):
         # do default anyways
         return item.__class__.__name__
 
-    @unittest.skipIf(skip_tests, reason)
     def test_add_item(self):
 
         item = AttributeTypes(1, "string1", True, 2.2, datetime.now())
@@ -131,7 +136,6 @@ class TestMySQL(unittest.TestCase):
         rows = self.my_sql.dump()
         self.assertEqual(len(rows[table_name]), 1)
 
-    @unittest.skipIf(skip_tests, reason)
     def test_add_item_with_to_dict(self):
 
         item = AttributeTypesWithToDict(
@@ -144,7 +148,6 @@ class TestMySQL(unittest.TestCase):
         rows = self.my_sql.dump()
         self.assertEqual(len(rows[table_name]), 1)
 
-    @unittest.skipIf(skip_tests, reason)
     def test_add_attribute_on_the_fly(self):
 
         item = Type1(1, "string1")
@@ -170,7 +173,6 @@ class TestMySQL(unittest.TestCase):
         table_name = self.my_sql.get_table_name(item)
         self.assertEqual(len(rows[table_name]), 2)
 
-    @unittest.skipIf(skip_tests, reason)
     def test_two_item_types(self):
 
         item11 = Type1(11, "string11")
@@ -196,7 +198,6 @@ class TestMySQL(unittest.TestCase):
                 setattr(item, "added_field", _id)
             self.my_sql.add_items([item])
 
-    @unittest.skipIf(skip_tests, reason)
     def test_concurrency(self):
 
         table_name = self.my_sql.get_table_name(IdItem(1))
@@ -245,7 +246,7 @@ class TestMySQL(unittest.TestCase):
         self.assertTrue(isinstance(value, bool))
         value = mysql.get_value(1.1, float)
         self.assertTrue(isinstance(value, float))
-        value = mysql.get_value([1,1], list)
+        value = mysql.get_value([1, 1], list)
         self.assertTrue(isinstance(value, str))
         value = mysql.get_value(datetime.now(), datetime)
         self.assertTrue(isinstance(value, datetime))

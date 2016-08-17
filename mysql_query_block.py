@@ -1,19 +1,19 @@
-from nio.common.discovery import Discoverable, DiscoverableType
-from nio.metadata.properties import ExpressionProperty
-from nio.common.signal.base import Signal
+from nio.util.discovery import discoverable
+from nio.properties import Property
+from nio.signal.base import Signal
 
 from .mysql_base_block import MySQLBase
 from . import evaluate_expression
 
 
-@Discoverable(DiscoverableType.block)
+@discoverable
 class MySQLQuery(MySQLBase):
 
     """ A block for inserting data into a MySQL database.
     Properties:
         query: mysql statement to execute
     """
-    query = ExpressionProperty(
+    query = Property(
         title='Query', default="SELECT * from {{$table}}")
 
     def execute_query(self, signals):

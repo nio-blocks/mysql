@@ -1,4 +1,4 @@
-from nio.common.signal.base import Signal
+from nio import Signal
 # TODO, set this to False by default
 from ...driver.mysql import MySQL
 
@@ -17,7 +17,7 @@ from datetime import datetime
 import unittest
 import logging
 
-from nio.modules.threading import spawn
+from nio.util.threading import spawn
 
 
 class AttributeTypes(object):

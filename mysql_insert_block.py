@@ -1,11 +1,11 @@
-from nio.common.discovery import Discoverable, DiscoverableType
-from nio.common.signal.base import Signal
-from nio.metadata.properties import ExpressionProperty
+from nio.util.discovery import discoverable
+from nio import Signal
+from nio.properties import Property
 
 from .mysql_base_block import MySQLBase
 
 
-@Discoverable(DiscoverableType.block)
+@discoverable
 class MySQLInsert(MySQLBase):
 
     """ A block for inserting data into a MySQL database.
@@ -13,11 +13,11 @@ class MySQLInsert(MySQLBase):
         target_table = ExpressionProperty(
             title='Target table', default="{{($__class__.__name__)}}")
     """
-    target_table = ExpressionProperty(
+    target_table = Property(
         title='Target table', default="{{($__class__.__name__)}}")
 
     def get_target_table(self):
-        return self.target_table
+        return self.target_table()
 
     def execute_query(self, signals):
         added_items = self._db.add_items(signals)

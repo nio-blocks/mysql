@@ -1,5 +1,5 @@
 from collections import defaultdict
-from nio.modules.threading import RLock
+from threading import RLock
 
 
 class SQL(object):

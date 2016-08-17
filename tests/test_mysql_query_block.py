@@ -1,6 +1,6 @@
 import logging
-from nio.common.signal.base import Signal
-from nio.util.support.block_test_case import NIOBlockTestCase
+from nio import Signal
+from nio.testing.block_test_case import NIOBlockTestCase
 from ..mysql_insert_block import MySQLInsert
 from ..mysql_query_block import MySQLQuery
 from . import mysql_running

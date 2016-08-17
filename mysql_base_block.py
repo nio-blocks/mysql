@@ -1,8 +1,8 @@
 from datetime import timedelta
 
-from nio.common.versioning.dependency import DependsOn
-from nio.common.block.base import Block
-from nio.metadata.properties import TimeDeltaProperty, StringProperty, \
+from nio.util.versioning.dependency import DependsOn
+from nio.block.base import Block
+from nio.properties import TimeDeltaProperty, StringProperty, \
     ObjectProperty, IntProperty, PropertyHolder, BoolProperty
 from nio.modules.scheduler import Job
 from .driver.mysql import MySQL
@@ -47,10 +47,10 @@ class MySQLBase(Block):
 
     def configure(self, context):
         super().configure(context)
-        self._db = MySQL(self.host, self.port, self.database,
-                         self.credentials.username, self.credentials.password,
-                         self.commit_after_query,
-                         self._logger,
+        self._db = MySQL(self.host(), self.port(), self.database(),
+                         self.credentials().username(), self.credentials().password(),
+                         self.commit_after_query(),
+                         self.logger,
                          target_table=self.get_target_table())
         self._connect()
 
@@ -90,9 +90,9 @@ class MySQLBase(Block):
                     # attempt to add these signals again, specify not to retry
                     self.deliver_signals(signals, False)
                 else:
-                    self._logger.exception('Unable to reconnect and send')
+                    self.logger.exception('Unable to reconnect and send')
             else:
-                self._logger.exception('Unable to execute query')
+                self.logger.exception('Unable to execute query')
 
     def execute_query(self, signals):
         """ To be implemented by inheriting classes
@@ -109,26 +109,26 @@ class MySQLBase(Block):
         """ Connect to database, this method as built-in
         reconnection functionality
         """
-        self._logger.debug("Connecting to: {0}:{1}".format(
-            self.host, self.port))
+        self.logger.debug("Connecting to: {0}:{1}".format(
+            self.host(), self.port()))
         try:
             self._db.open()
-            self._logger.debug("Connected to: {0}:{1}".format(
-                self.host, self.port))
+            self.logger.debug("Connected to: {0}:{1}".format(
+                self.host(), self.port()))
         except Exception as e:
-            self._logger.exception("Failed to connect to database, retrying")
+            self.logger.exception("Failed to connect to database, retrying")
             self._connection_job = Job(
                 self._reconnect,
-                timedelta(seconds=self.retry_timeout.total_seconds()),
+                timedelta(seconds=self.retry_timeout().total_seconds()),
                 repeatable=False)
 
     def _close_connection(self):
         if self.connected:
             try:
-                self._logger.debug("Closing connection")
+                self.logger.debug("Closing connection")
                 self._db.close()
             except Exception as e:
-                self._logger.debug("Failed to close connection, details".
+                self.logger.debug("Failed to close connection, details".
                                    format(str(e)))
 
     def _reconnect(self):
@@ -139,7 +139,7 @@ class MySQLBase(Block):
     def _on_discarded_signals(self, signals):
         # TODO, good place to implement functionality for
         # "saving" signals hoping for a reconnect and have no-loss
-        self._logger.warning('Block is not connected, discarding: {0} '
+        self.logger.warning('Block is not connected, discarding: {0} '
                              'signals'.format(len(signals)))
 
     @property

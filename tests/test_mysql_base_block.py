@@ -1,9 +1,9 @@
 import logging
-from nio.common.signal.base import Signal
-from nio.modules.threading import Event
+from nio.signal.base import Signal
+from threading import Event
 
 from unittest.mock import Mock
-from nio.util.support.block_test_case import NIOBlockTestCase
+from nio.testing.block_test_case import NIOBlockTestCase
 from ..mysql_base_block import MySQLBase
 
 

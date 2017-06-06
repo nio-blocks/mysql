@@ -29,7 +29,7 @@ Output
 ---------
 None
 
-----------------
+***
 
 MySQLInsert
 ===========
@@ -58,7 +58,7 @@ Output
 ---------
 A signal containing number of successfully added items
 
-----------------
+***
 
 MySQLQuery
 ===========
@@ -87,4 +87,3 @@ Output
 ---------
 Data satisfying query in the form of 'Signal' instances.
 
-----------------

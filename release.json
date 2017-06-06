@@ -1,0 +1,17 @@
+{
+  "nio/MySQLInsert": {
+    "Version": "1.0.0",
+    "Language": "Python",
+    "Reference": "github.com/nio-blocks/mysql.git@v1.0.0"
+  },
+  "nio/MySQLQuery": {
+    "Version": "1.0.0",
+    "Language": "Python",
+    "Reference": "github.com/nio-blocks/mysql.git@v1.0.0"
+  },
+  "nio/MySQLBase": {
+    "Version": "1.0.0",
+    "Language": "Python",
+    "Reference": "github.com/nio-blocks/mysql.git@v1.0.0"
+  }
+}

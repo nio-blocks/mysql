@@ -1,62 +1,65 @@
 {
-  "nio/MySQLInsert": {
-    "Output": "A signal containing number of successfully added items",
-    "Description": "Stores input signals in a MySQL database.",
-    "Commands": {},
-    "Version": "1.0.0",
-    "Category": "Database",
-    "Properties": {
-      "target_table": {
-        "description": "Allows to specify/calculate table name from signal"
-      }
+    "nio/MySQLQuery": {
+        "Commands": {},
+        "Description": "Queries MySQL database.",
+        "Input": {
+            "Description": "Signals to be processed."
+        },
+        "Version": "1.0.0",
+        "Properties": {
+            "query": {
+                "description": "Query statement"
+            }
+        },
+        "Category": "Database",
+        "Output": {
+            "Description": "Data satisfying query in the form of 'Signal' instances."
+        }
     },
-    "Input": "A record will be inserted into the database for each input signal.",
-    "Dependencies": [
-      "-   [pymysql](https://pypi.python.org/pypi/PyMySQL/)"
-    ]
-  },
-  "nio/MySQLQuery": {
-    "Output": "Data satisfying query in the form of 'Signal' instances.",
-    "Description": "Queries MySQL database.",
-    "Commands": {},
-    "Category": "Database",
-    "Version": "1.0.0",
-    "Properties": {
-      "query": {
-        "description": "Query statement"
-      }
+    "nio/MySQLInsert": {
+        "Commands": {},
+        "Description": "Stores input signals in a MySQL database.",
+        "Input": {
+            "Description": "A record will be inserted into the database for each input signal."
+        },
+        "Version": "1.0.0",
+        "Properties": {
+            "target_table": {
+                "description": "Allows to specify/calculate table name from signal"
+            }
+        },
+        "Category": "Database",
+        "Output": {
+            "Description": "A signal containing number of successfully added items"
+        }
     },
-    "Input": "Signals to be processed.",
-    "Dependencies": [
-      "-   [pymysql](https://pypi.python.org/pypi/PyMySQL/)"
-    ]
-  },
-  "nio/MySQLBase": {
-    "Output": "None",
-    "Description": "Stores input signals in a MySQL database.",
-    "Commands": {},
-    "Category": "Database",
-    "Version": "1.0.0",
-    "Properties": {
-      "retry_timeout": {
-        "description": "When disconnected, this specifies how long to wait before attempting to connect."
-      },
-      "port": {
-        "description": "MySQL server port."
-      },
-      "host": {
-        "description": "MySQL server host."
-      },
-      "database": {
-        "description": "Database name."
-      },
-      "commit_after_query": {
-        "description": "Whether or not to issue a commit after a query is executed."
-      }
-    },
-    "Input": "None",
-    "Dependencies": [
-      "-   [pymysql](https://pypi.python.org/pypi/PyMySQL/)"
-    ]
-  }
+    "nio/MySQLBase": {
+        "Commands": {},
+        "Description": "Stores input signals in a MySQL database.",
+        "Input": {
+            "Description": "None"
+        },
+        "Version": "1.0.0",
+        "Properties": {
+            "host": {
+                "description": "MySQL server host."
+            },
+            "retry_timeout": {
+                "description": "When disconnected, this specifies how long to wait before attempting to connect."
+            },
+            "commit_after_query": {
+                "description": "Whether or not to issue a commit after a query is executed."
+            },
+            "port": {
+                "description": "MySQL server port."
+            },
+            "database": {
+                "description": "Database name."
+            }
+        },
+        "Category": "Database",
+        "Output": {
+            "Description": "None"
+        }
+    }
 }

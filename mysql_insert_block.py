@@ -1,11 +1,9 @@
-from nio.util.discovery import discoverable
 from nio import Signal
-from nio.properties import Property
+from nio.properties import Property, VersionProperty
 
 from .mysql_base_block import MySQLBase
 
 
-@discoverable
 class MySQLInsert(MySQLBase):
 
     """ A block for inserting data into a MySQL database.
@@ -15,6 +13,7 @@ class MySQLInsert(MySQLBase):
     """
     target_table = Property(
         title='Target table', default="{{($__class__.__name__)}}")
+    version = VersionProperty("0.0.1")
 
     def get_target_table(self):
         return self.target_table()

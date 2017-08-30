@@ -1,9 +1,11 @@
 import logging
 from nio.signal.base import Signal
 from threading import Event
-
 from unittest.mock import Mock
+
 from nio.testing.block_test_case import NIOBlockTestCase
+from nio.util.discovery import not_discoverable
+
 from ..mysql_base_block import MySQLBase
 
 
@@ -13,6 +15,7 @@ class MySQLLikeException(Exception):
         super().__init__("Could not connect to MySQL")
 
 
+@not_discoverable
 class MySQLBaseWithConnect(MySQLBase):
 
     def __init__(self, e, retries=1):

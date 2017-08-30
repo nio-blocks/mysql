@@ -1,17 +1,12 @@
 {
-  "nio/MySQLBase": {
-    "language": "Python",
-    "version": "0.0.1",
-    "url": "git://github.com/nio-blocks/mysql.git"
-  },
   "nio/MySQLInsert": {
     "language": "Python",
-    "version": "0.0.1",
-    "url": "git://github.com/nio-blocks/mysql.git"
+    "url": "git://github.com/nio-blocks/mysql.git",
+    "version": "0.0.1"
   },
   "nio/MySQLQuery": {
     "language": "Python",
-    "version": "0.0.1",
-    "url": "git://github.com/nio-blocks/mysql.git"
+    "url": "git://github.com/nio-blocks/mysql.git",
+    "version": "0.0.1"
   }
 }

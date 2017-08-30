@@ -1,26 +1,130 @@
 {
-  "nio/MySQLBase": {
-    "version": "0.0.1",
-    "description": "",
-    "inputs": {},
-    "outputs": {},
-    "properties": {},
-    "commands": {}
-  },
   "nio/MySQLInsert": {
     "version": "0.0.1",
-    "description": "",
-    "inputs": {},
-    "outputs": {},
-    "properties": {},
+    "description": "Stores input signals in a MySQL database.",
+    "properties": {
+      "commit_after_query": {
+        "title": "Commit After Query",
+        "type": "BoolType",
+        "description": "Whether or not to issue a commit after a query is executed.",
+        "default": false
+      },
+      "credentials": {
+        "title": "Connection Credentials",
+        "type": "ObjectType",
+        "description": "MySQL user name and password to connect to database.",
+        "default": {
+          "password": "[[MYSQL_PASSWORD]]",
+          "username": "[[MYSQL_USER]]"
+        }
+      },
+      "database": {
+        "title": "Database Name",
+        "type": "StringType",
+        "description": "Name of MySQL database to connect to.",
+        "default": "signals"
+      },
+      "host": {
+        "title": "MySQL Host",
+        "type": "StringType",
+        "description": "MySQL server host.",
+        "default": "[[MYSQL_HOST]]"
+      },
+      "port": {
+        "title": "Port",
+        "type": "IntType",
+        "description": "MySQL server port.",
+        "default": 3306
+      },
+      "retry_timeout": {
+        "title": "Retry Timeout",
+        "type": "TimeDeltaType",
+        "description": "When disconnected, this specifies how long to wait before attempting to connect.",
+        "default": {
+          "seconds": 1
+        }
+      },
+      "target_table": {
+        "title": "Target table",
+        "type": "Type",
+        "description": "MySQL table to insert into.  Allows to specify/calculate table name from signal",
+        "default": "{{($__class__.__name__)}}"
+      }
+    },
+    "inputs": {
+      "default": {
+        "description": "A record will be inserted into the database for each input signal."
+      }
+    },
+    "outputs": {
+      "default": {
+        "description": "A signal containing number of successfully added items."
+      }
+    },
     "commands": {}
   },
   "nio/MySQLQuery": {
     "version": "0.0.1",
-    "description": "",
-    "inputs": {},
-    "outputs": {},
-    "properties": {},
+    "description": "Queries a MySQL database.",
+    "properties": {
+      "commit_after_query": {
+        "title": "Commit After Query",
+        "type": "BoolType",
+        "description": "Whether or not to issue a commit after a query is executed.",
+        "default": false
+      },
+      "credentials": {
+        "title": "Connection Credentials",
+        "type": "ObjectType",
+        "description": "MySQL user name and password to connect to database.",
+        "default": {
+          "password": "[[MYSQL_PASSWORD]]",
+          "username": "[[MYSQL_USER]]"
+        }
+      },
+      "database": {
+        "title": "Database Name",
+        "type": "StringType",
+        "description": "Name of MySQL database to connect to.",
+        "default": "signals"
+      },
+      "host": {
+        "title": "MySQL Host",
+        "type": "StringType",
+        "description": "MySQL server host.",
+        "default": "[[MYSQL_HOST]]"
+      },
+      "port": {
+        "title": "Port",
+        "type": "IntType",
+        "description": "MySQL server port.",
+        "default": 3306
+      },
+      "query": {
+        "title": "Query",
+        "type": "Type",
+        "description": "SQL query to execute.",
+        "default": "SELECT * from {{$table}}"
+      },
+      "retry_timeout": {
+        "title": "Retry Timeout",
+        "type": "TimeDeltaType",
+        "description": "When disconnected, this specifies how long to wait before attempting to connect.",
+        "default": {
+          "seconds": 1
+        }
+      }
+    },
+    "inputs": {
+      "default": {
+        "description": "Any list of signals."
+      }
+    },
+    "outputs": {
+      "default": {
+        "description": "Data satisfying query in the form of 'Signal' instances."
+      }
+    },
     "commands": {}
   }
 }

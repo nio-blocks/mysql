@@ -1,10 +1,12 @@
 from datetime import timedelta
 
 from nio.util.versioning.dependency import DependsOn
+from nio.util.discovery import not_discoverable
 from nio.block.base import Block
 from nio.properties import TimeDeltaProperty, StringProperty, \
     ObjectProperty, IntProperty, PropertyHolder, BoolProperty
 from nio.modules.scheduler import Job
+
 from .driver.mysql import MySQL
 
 
@@ -19,6 +21,7 @@ class Credentials(PropertyHolder):
     password = StringProperty(title='Password', default='[[MYSQL_PASSWORD]]')
 
 
+@not_discoverable
 @DependsOn("nio.modules.scheduler")
 class MySQLBase(Block):
 
@@ -48,7 +51,8 @@ class MySQLBase(Block):
     def configure(self, context):
         super().configure(context)
         self._db = MySQL(self.host(), self.port(), self.database(),
-                         self.credentials().username(), self.credentials().password(),
+                         self.credentials().username(),
+                         self.credentials().password(),
                          self.commit_after_query(),
                          self.logger,
                          target_table=self.get_target_table())
@@ -128,8 +132,8 @@ class MySQLBase(Block):
                 self.logger.debug("Closing connection")
                 self._db.close()
             except Exception as e:
-                self.logger.debug("Failed to close connection, details".
-                                   format(str(e)))
+                self.logger.debug(
+                    "Failed to close connection, details".format(str(e)))
 
     def _reconnect(self):
         self._connection_job = None
@@ -139,8 +143,10 @@ class MySQLBase(Block):
     def _on_discarded_signals(self, signals):
         # TODO, good place to implement functionality for
         # "saving" signals hoping for a reconnect and have no-loss
-        self.logger.warning('Block is not connected, discarding: {0} '
-                             'signals'.format(len(signals)))
+        self.logger.warning(
+            'Block is not connected, discarding: {0} signals'.format(
+                len(signals))
+        )
 
     @property
     def connected(self):

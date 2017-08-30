@@ -1,12 +1,9 @@
-from nio.util.discovery import discoverable
-from nio.properties import Property
+from nio.properties import Property, VersionProperty
 from nio.signal.base import Signal
 
 from .mysql_base_block import MySQLBase
-from . import evaluate_expression
 
 
-@discoverable
 class MySQLQuery(MySQLBase):
 
     """ A block for inserting data into a MySQL database.
@@ -15,6 +12,7 @@ class MySQLQuery(MySQLBase):
     """
     query = Property(
         title='Query', default="SELECT * from {{$table}}")
+    version = VersionProperty("0.0.1")
 
     def execute_query(self, signals):
         for signal in signals:

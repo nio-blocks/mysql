@@ -1,4 +1,10 @@
+import unittest
+import logging
+from datetime import datetime
+
 from nio import Signal
+from nio.util.threading import spawn
+
 # TODO, set this to False by default
 from ...driver.mysql import MySQL
 
@@ -12,12 +18,6 @@ try:
 except:
     skip_tests = True
     reason = "pymysql is not installed"
-
-from datetime import datetime
-import unittest
-import logging
-
-from nio.util.threading import spawn
 
 
 class AttributeTypes(object):

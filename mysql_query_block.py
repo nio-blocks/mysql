@@ -12,7 +12,7 @@ class MySQLQuery(MySQLBase):
     """
     query = Property(
         title='Query', default="SELECT * from {{$table}}")
-    version = VersionProperty("0.0.1")
+    version = VersionProperty("1.0.0")
 
     def execute_query(self, signals):
         for signal in signals:

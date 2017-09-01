@@ -64,7 +64,7 @@
     "commands": {}
   },
   "nio/MySQLQuery": {
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "Queries a MySQL database.",
     "properties": {
       "commit_after_query": {

@@ -2,6 +2,9 @@
   "nio/MySQLInsert": {
     "version": "0.0.1",
     "description": "Stores input signals in a MySQL database.",
+    "categories": [
+      "Database"
+    ],
     "properties": {
       "commit_after_query": {
         "title": "Commit After Query",
@@ -66,6 +69,9 @@
   "nio/MySQLQuery": {
     "version": "1.0.0",
     "description": "Queries a MySQL database.",
+    "categories": [
+      "Database"
+    ],
     "properties": {
       "commit_after_query": {
         "title": "Commit After Query",

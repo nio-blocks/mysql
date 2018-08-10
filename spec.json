@@ -17,8 +17,8 @@
         "type": "ObjectType",
         "description": "MySQL user name and password to connect to database.",
         "default": {
-          "password": "[[MYSQL_PASSWORD]]",
-          "username": "[[MYSQL_USER]]"
+          "username": "[[MYSQL_USER]]",
+          "password": "[[MYSQL_PASSWORD]]"
         }
       },
       "database": {
@@ -84,8 +84,8 @@
         "type": "ObjectType",
         "description": "MySQL user name and password to connect to database.",
         "default": {
-          "password": "[[MYSQL_PASSWORD]]",
-          "username": "[[MYSQL_USER]]"
+          "username": "[[MYSQL_USER]]",
+          "password": "[[MYSQL_PASSWORD]]"
         }
       },
       "database": {
